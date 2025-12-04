@@ -1,0 +1,138 @@
+import { useState } from 'react';
+import { Lock, User, AlertCircle } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Alert, AlertDescription } from './ui/alert';
+
+interface LoginProps {
+  onLogin: (username: string) => void;
+  onSwitchToRegister: () => void;
+}
+
+export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!username || !password) {
+      setError('Por favor complete todos los campos');
+      return;
+    }
+
+    if (username.length < 3) {
+      setError('El usuario debe tener al menos 3 caracteres');
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find((u: any) => u.username === username);
+    
+    if (!user) {
+      setError('Usuario no encontrado');
+      return;
+    }
+
+    if (user.password !== password) {
+      setError('Contraseña incorrecta');
+      return;
+    }
+
+    onLogin(username);
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-slate-900">
+      <div className="w-full max-w-md">
+        <div className="relative">
+          {/* Card */}
+          <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+            {/* Header gradient */}
+            <div className="h-2 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500" />
+            
+            <div className="p-8">
+              {/* Logo */}
+              <div className="flex justify-center mb-6">
+                <img
+                  src="https://i.ibb.co/p6LH6xPq/Whats-App-Image-2025-12-03-at-00-35-28-b8ba1571-removebg-preview.png"
+                  alt="Logo"
+                  className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
+                />
+              </div>
+
+              <div className="text-center mb-8">
+                <h2 className="text-white text-2xl mb-2">Bienvenido</h2>
+                <p className="text-slate-400">Seguridad Informática UTS</p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {error && (
+                  <Alert className="bg-red-500/10 border-red-500/50 text-red-300">
+                    <AlertCircle className="size-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                
+                {/* Usuario */}
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="text-slate-300">Usuario</Label>
+                  <div className="relative group">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                    <Input
+                      id="username"
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      placeholder="Ingrese su usuario"
+                      autoComplete="username"
+                    />
+                  </div>
+                </div>
+
+                {/* Contraseña */}
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-slate-300">Contraseña</Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      placeholder="Ingrese su contraseña"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-500/50 hover:shadow-blue-500/70 transition-all"
+                >
+                  Iniciar Sesión
+                </Button>
+                
+                <p className="text-center text-sm text-slate-400 pt-2">
+                  ¿No tienes cuenta?{' '}
+                  <button
+                    type="button"
+                    onClick={onSwitchToRegister}
+                    className="text-blue-400 hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
+                  >
+                    Regístrate aquí
+                  </button>
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

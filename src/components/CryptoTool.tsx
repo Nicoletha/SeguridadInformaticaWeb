@@ -1,0 +1,184 @@
+import { useState } from 'react';
+import CryptoJS from 'crypto-js';
+import { Lock, Copy, CheckCircle, Info, AlertCircle } from 'lucide-react';
+import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+
+
+export function EncryptAES() {
+  const [text, setText] = useState('');
+  const [password, setPassword] = useState('');
+  const [aesLength, setAesLength] = useState<128 | 192 | 256>(256);
+  const [result, setResult] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+const encryptAES = (plaintext: string, password: string): string => {
+    const salt = CryptoJS.lib.WordArray.random(16);
+    const iv = CryptoJS.lib.WordArray.random(16);
+    const key = CryptoJS.PBKDF2(password, salt, {
+      keySize: aesLength / 32,
+      iterations: 100000,
+    });
+    const encrypted = CryptoJS.AES.encrypt(plaintext, key, { iv });
+    return `${aesLength}:${CryptoJS.enc.Base64.stringify(salt)}:${CryptoJS.enc.Base64.stringify(iv)}:${encrypted.toString()}`;
+  };
+
+  const handleEncrypt = () => {
+    setError('');
+    setResult('');
+    if (!text) return setError('Por favor ingrese el texto a encriptar');
+    if (!password) return setError('Por favor ingrese una contraseña');
+    if (password.length < 12)
+      return setError('La contraseña debe tener al menos 12 caracteres');
+    setLoading(true);
+    try {
+      const encrypted = encryptAES(text, password);
+      setResult(encrypted);
+    } catch {
+      setError('Error al encriptar los datos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(result);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Instrucciones para el modo encriptar
+  const instrucciones = [
+    '1. Selecciona la longitud de AES.',
+    '2. Ingresa el texto y una contraseña segura.',
+    '3. Presiona "Encriptar Datos" para generar el resultado.',
+    '4. Copia el resultado usando el botón de copiar.',
+    '5. Guarda tu contraseña para poder desencriptar posteriormente.',
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Título */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/30">
+          <Lock className="size-6 text-blue-400" />
+        </div>
+        <div>
+          <h3 className="text-white text-xl">Encriptación AES con CryptoJS</h3>
+          <p className="text-slate-400 text-sm">AES + IV aleatorio + PBKDF2</p>
+        </div>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex gap-3">
+          <AlertCircle className="size-5 text-red-400 flex-shrink-0 mt-0.5" />
+          <span className="text-red-300 text-sm">{error}</span>
+        </div>
+      )}
+
+            <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl flex gap-3">
+        <Info className="size-5 text-blue-400 flex-shrink-0 mt-0.5" />
+        <div className="text-blue-200 text-sm space-y-1">
+          <strong>AES-256-GCM + IV aleatorio:</strong> Cifrado de bloques estándar con vector de inicialización único para cada operación, que garantiza seguridad y no repetición.&nbsp;
+          <strong>PBKDF2:</strong> Derivación de clave con 100,000 iteraciones para resistencia frente a ataques de fuerza bruta.&nbsp;
+          Esta implementación cumple con <strong>OWASP A02:2021 - Cryptographic Failures</strong>.
+        </div>
+      </div>
+
+      {/* Instrucciones */}
+      <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+        <div className="flex gap-3">
+          <Info className="size-5 text-blue-400 flex-shrink-0 mt-0.5" />
+          <div className="text-blue-200 text-sm space-y-1">
+            <strong>Instrucciones:</strong>
+            <ol className="list-decimal list-inside ml-2 mt-1">
+              {instrucciones.map((line, idx) => (
+                <li key={idx}>{line}</li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      {/* Selección longitud AES */}
+      <div className="p-4 bg-slate-800/60 border border-slate-700 rounded-xl">
+        <Label className="text-slate-300">Selección de longitud AES</Label>
+        <select
+          value={aesLength}
+          onChange={(e) => setAesLength(Number(e.target.value) as 128 | 192 | 256)}
+          className="mt-2 w-full p-2 bg-slate-900/50 border border-slate-700 text-white rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+        >
+          <option value={128}>AES-128 (más rápido, menos seguro)</option>
+          <option value={192}>AES-192</option>
+          <option value={256}>AES-256 (recomendado)</option>
+        </select>
+      </div>
+
+      {/* Input texto */}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-slate-300">Texto a Encriptar</Label>
+          <Textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Ingrese el texto..."
+            className="min-h-[150px] bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 font-mono text-sm"
+          />
+        </div>
+
+        {/* Input contraseña */}
+        <div className="space-y-2">
+          <Label className="text-slate-300">Contraseña</Label>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Mínimo 12 caracteres recomendado"
+            className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+          />
+        </div>
+
+        {/* Botón encriptar */}
+        <Button
+          onClick={handleEncrypt}
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/50 text-white transition-all"
+        >
+          {loading ? 'Procesando...' : <><Lock className="size-4 mr-2" /> Encriptar Datos</>}
+        </Button>
+      </div>
+
+      {/* Resultado */}
+      {result && (
+        <div className="space-y-2 mt-6">
+          <Label className="text-slate-300">Resultado:</Label>
+
+          <div className="relative">
+            <Textarea
+              value={result}
+              readOnly
+              className="min-h-[120px] font-mono text-sm bg-emerald-950/30 border-emerald-500/30 text-emerald-300"
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              className="absolute top-2 right-2 hover:bg-white/10"
+              onClick={handleCopy}
+            >
+              {copied ? (
+                <CheckCircle className="size-4 text-emerald-400" />
+              ) : (
+                <Copy className="size-4 text-slate-400" />
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
