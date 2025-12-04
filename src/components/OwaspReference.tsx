@@ -213,15 +213,8 @@ export function OwaspReference() {
           <div className="space-y-2">
             <h4 className="text-white">Implementación en esta aplicación</h4>
             <p className="text-slate-400 text-sm">
-              Esta Security Hub implementa varios controles de seguridad basados en OWASP:
+              Esta App de seguridad está basada en el Top 10 de OWASP - 2021.
             </p>
-            <ul className="text-sm text-slate-400 space-y-1 ml-4">
-              <li>• <strong className="text-slate-300">A02:</strong> Encriptación AES-256-GCM con derivación de clave PBKDF2</li>
-              <li>• <strong className="text-slate-300">A07:</strong> Validación de contraseñas fuertes y gestión segura</li>
-              <li>• <strong className="text-slate-300">A03:</strong> Validación y sanitización de entradas de usuario</li>
-              <li>• <strong className="text-slate-300">A08:</strong> Verificación de integridad mediante hashing SHA</li>
-              <li>• <strong className="text-slate-300">A05:</strong> Scanner de configuraciones de seguridad</li>
-            </ul>
           </div>
         </div>
       </div>

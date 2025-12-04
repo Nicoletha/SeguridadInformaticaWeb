@@ -16,9 +16,7 @@ export function DecryptAES() {
 
   // Función para validar Base64 con padding correcto
   const isValidBase64 = (str: string) => {
-    // Longitud debe ser múltiplo de 4
     if (str.length % 4 !== 0) return false;
-    // Sólo caracteres válidos + padding máximo 2 "=" al final
     return /^[A-Za-z0-9+/]+={0,2}$/.test(str);
   };
 
@@ -30,7 +28,6 @@ export function DecryptAES() {
       const [saltBase64, ivBase64, cipherBase64] = ciphertextParts;
       if (!saltBase64 || !ivBase64 || !cipherBase64) return null;
 
-      // Validar Base64 con padding correcto para cada parte
       if (
         !isValidBase64(saltBase64) ||
         !isValidBase64(ivBase64) ||
@@ -49,7 +46,6 @@ export function DecryptAES() {
       const decrypted = CryptoJS.AES.decrypt(cipherBase64, key, { iv });
       const plaintext = decrypted.toString(CryptoJS.enc.Utf8);
 
-      // Validación extra: al menos un caracter imprimible ASCII
       if (!plaintext || !/[\x20-\x7E]/.test(plaintext)) return null;
 
       return plaintext;
@@ -121,16 +117,16 @@ export function DecryptAES() {
     <div className="space-y-6">
       {/* Título */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-purple-500/10 rounded-xl border border-purple-500/30 backdrop-blur-sm">
+        <div className="p-3 bg-purple-500/10 rounded-xl border border-purple-500/30">
           <Unlock className="size-6 text-purple-400" />
         </div>
         <div>
           <h3 className="text-white text-xl">Desencriptación AES con CryptoJS</h3>
-          <p className="text-purple-300 text-sm">AES + IV aleatorio + PBKDF2</p>
+          <p className="text-slate-400 text-sm">AES + IV aleatorio + PBKDF2</p>
         </div>
       </div>
 
-      {/* Alerta de info */}
+      {/* Alerta info */}
       <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl flex gap-3">
         <Info className="size-5 text-purple-400 flex-shrink-0 mt-0.5" />
         <div className="text-purple-200 text-sm space-y-1">
@@ -149,7 +145,7 @@ export function DecryptAES() {
       )}
 
       {/* Instrucciones */}
-      <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl backdrop-blur-sm">
+      <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl">
         <div className="flex gap-3">
           <Info className="size-5 text-purple-400 flex-shrink-0 mt-0.5" />
           <div className="text-purple-200 text-sm space-y-1">
@@ -163,50 +159,53 @@ export function DecryptAES() {
         </div>
       </div>
 
-      {/* Input texto con márgenes iguales */}
-      <div className="space-y-4 mx-4 my-2">
+      {/* Inputs con estilos igual que EncryptAES */}
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Label className="text-purple-300">Texto Encriptado</Label>
+          <Label className="text-slate-300">Texto Encriptado</Label>
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Ingrese el texto encriptado..."
-            className="min-h-[150px] bg-slate-800/50 border border-purple-700 text-white placeholder:text-purple-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/40 font-mono text-sm mx-2 py-2 px-3"
+            placeholder="Ingrese el texto que desea desencriptar..."
+            className="min-h-[150px] bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono text-sm"
           />
         </div>
 
-        {/* Input contraseña con márgenes iguales */}
         <div className="space-y-2">
-          <Label className="text-purple-300">Contraseña usada</Label>
+          <Label className="text-slate-300">Contraseña usada</Label>
           <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Ingrese la contraseña utilizada..."
-            className="bg-slate-800/50 border border-purple-700 text-white placeholder:text-purple-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/40 mx-2 py-2 px-3"
+            placeholder="Ingrese la contraseña utilizada al encriptar..."
+            className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono text-sm"
           />
         </div>
 
-        {/* Botón desencriptar */}
         <Button
           onClick={handleDecrypt}
           disabled={loading}
-          className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 shadow-lg shadow-purple-500/50 text-white transition-all mx-2"
+          className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 shadow-lg shadow-purple-500/50 text-white transition-all"
         >
-          {loading ? 'Procesando...' : <><Unlock className="size-4 mr-2" /> Desencriptación AES</>}
+          {loading ? (
+            'Procesando...'
+          ) : (
+            <>
+              <Unlock className="size-4 mr-2" /> Desencriptar Datos
+            </>
+          )}
         </Button>
       </div>
 
       {/* Resultado */}
       {result && (
-        <div className="space-y-2 mt-6 mx-4">
-          <Label className="text-purple-300">Resultado:</Label>
-
+        <div className="space-y-2 mt-6">
+          <Label className="text-slate-300">Resultado:</Label>
           <div className="relative">
             <Textarea
               value={result}
               readOnly
-              className="min-h-[120px] font-mono text-sm bg-purple-950/30 border border-purple-500/30 text-purple-300 mx-2 py-2 px-3"
+              className="min-h-[120px] font-mono text-sm bg-emerald-950/30 border-emerald-500/30 text-emerald-300"
             />
             <Button
               size="sm"
@@ -217,7 +216,7 @@ export function DecryptAES() {
               {copied ? (
                 <CheckCircle className="size-4 text-emerald-400" />
               ) : (
-                <Copy className="size-4 text-purple-400" />
+                <Copy className="size-4 text-slate-400" />
               )}
             </Button>
           </div>
