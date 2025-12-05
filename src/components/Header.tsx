@@ -1,12 +1,17 @@
 import { LogOut, User } from 'lucide-react';
 import { Button } from './ui/button';
+import { useAuth } from '../auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-interface HeaderProps {
-  onLogout: () => void;
-  username: string;
-}
+export function Header() {
+  const { setToken } = useAuth();
+  const navigate = useNavigate();
 
-export function Header({ onLogout, username }: HeaderProps) {
+  const handleLogout = () => {
+    setToken(null);     // borra token
+    navigate("/login"); // redirige
+  };
+
   return (
     <header className="relative border-b border-white/10 bg-slate-900/80 backdrop-blur-xl">
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-transparent to-blue-500/10" />
@@ -29,11 +34,11 @@ export function Header({ onLogout, username }: HeaderProps) {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
             <User className="size-4 text-blue-400" />
-            <span className="text-white font-medium">{username}</span>
+            {/* <span className="text-white font-medium">{username}</span> */}
           </div>
 
           <Button
-            onClick={onLogout}
+            onClick={() => handleLogout()}
             variant="outline"
             size="md"
             className="border-red-500/30 bg-red-500/20 text-white hover:bg-red-500/30 hover:text-white transition-colors px-4 py-2"

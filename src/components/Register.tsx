@@ -4,18 +4,18 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
-interface RegisterProps {
-  onRegister: (username: string) => void;
-  onSwitchToLogin: () => void;
-}
 
-export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
+export function Register() {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [passwordStrength, setPasswordStrength] = useState<string[]>([]);
 
   const validatePasswordStrength = (pwd: string) => {
@@ -33,58 +33,71 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
     setPasswordStrength(validatePasswordStrength(pwd));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
+  setSuccess('');
 
-    if (!username || !email || !password || !confirmPassword) {
-      setError('Por favor complete todos los campos');
+  // VALIDACIONES
+  if (!username || !email || !password || !confirmPassword) {
+    setError('Por favor complete todos los campos');
+    return;
+  }
+
+  if (username.length < 3) {
+    setError('El usuario debe tener al menos 3 caracteres');
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    setError('Por favor ingrese un email válido');
+    return;
+  }
+
+  if (password.length < 8) {
+    setError('La contraseña debe tener al menos 8 caracteres');
+    return;
+  }
+
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+    setError('La contraseña debe contener mayúsculas, minúsculas y números');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    setError('Las contraseñas no coinciden');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/Access/SignUp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          name: username, 
+          email, 
+          password,
+        }),
+      });
+
+    if (!response.ok) {
+      const data = await response.json();
+      setError(data.message || "Hubo un error al registrar el usuario");
       return;
     }
 
-    if (username.length < 3) {
-      setError('El usuario debe tener al menos 3 caracteres');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Por favor ingrese un email válido');
-      return;
-    }
-
-    if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres');
-      return;
-    }
-
-    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
-      setError('La contraseña debe contener mayúsculas, minúsculas y números');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
-
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    setSuccess("Registro exitoso. Ahora puedes iniciar sesión.");
     
-    if (users.some((u: any) => u.username === username)) {
-      setError('El usuario ya existe');
-      return;
-    }
+    // Opcional: redirigir al login 1s después
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1000);
 
-    if (users.some((u: any) => u.email === email)) {
-      setError('El email ya está registrado');
-      return;
-    }
-
-    users.push({ username, email, password });
-    localStorage.setItem('users', JSON.stringify(users));
-
-    onRegister(username);
-  };
+  } catch (error) {
+    setError("Error de conexión con el servidor");
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-slate-900">
@@ -214,7 +227,8 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
                   ¿Ya tienes cuenta?{' '}
                   <button
                     type="button"
-                    onClick={onSwitchToLogin}
+                    onClick={() => navigate("/login")}
+                    //onClick={onSwitchToLogin}
                     className="text-blue-400 hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
                   >
                     Inicia sesión aquí

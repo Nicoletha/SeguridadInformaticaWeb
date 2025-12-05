@@ -6,13 +6,13 @@ import { SecurityScanner } from './SecurityScanner';
 import { OwaspReference } from './OwaspReference';
 import { DecryptAES } from './DecryptTool';    // corregido: import named DecryptAES
 
-interface DashboardProps {
-  username: string;
-}
+// interface DashboardProps {
+//   username: string;
+// }
 
 type Tool = 'crypto' | 'password' | 'hash' | 'scanner' | 'owasp' | 'decrypt';
 
-export function Dashboard({ username }: DashboardProps) {
+export function Dashboard() {
   const [activeTool, setActiveTool] = useState<Tool>('crypto');
 
   const tools = [

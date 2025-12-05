@@ -4,45 +4,54 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
+import { API_URL } from '../config';
+import { useAuth } from '../auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-interface LoginProps {
-  onLogin: (username: string) => void;
-  onSwitchToRegister: () => void;
-}
+// interface LoginProps {
+//   onLogin: (username: string) => void;
+//   onSwitchToRegister: () => void;
+// }
 
-export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
-  const [username, setUsername] = useState('');
+export function Login() {
+  const { setToken } = useAuth(); // <-- usamos setToken
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!username || !password) {
-      setError('Por favor complete todos los campos');
+    if (!email || !password) {
+      setError("Completa todos los campos");
       return;
     }
 
-    if (username.length < 3) {
-      setError('El usuario debe tener al menos 3 caracteres');
-      return;
-    }
+    try {
+      const res = await fetch(`${API_URL}/api/Access/Login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }), // ajusta los nombres según tu API (email/username)
+      });
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find((u: any) => u.username === username);
-    
-    if (!user) {
-      setError('Usuario no encontrado');
-      return;
-    }
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setError(body?.message ?? "Credenciales incorrectas");
+        return;
+      }
 
-    if (user.password !== password) {
-      setError('Contraseña incorrecta');
-      return;
-    }
+      const data = await res.json();
 
-    onLogin(username);
+      // Guarda token en el contexto (y localStorage dentro del provider)
+      setToken(data.token);
+
+      // navega al dashboard o ruta protegida
+      navigate("/dashboard");
+    } catch (err) {
+      setError("Error de servidor. Intenta más tarde.");
+    }
   };
 
   return (
@@ -83,10 +92,10 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
                   <div className="relative group">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                     <Input
-                      id="username"
+                      id="email"
                       type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}  
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                       placeholder="Ingrese su usuario"
                       autoComplete="username"
@@ -122,7 +131,8 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
                   ¿No tienes cuenta?{' '}
                   <button
                     type="button"
-                    onClick={onSwitchToRegister}
+                    // onClick={onSwitchToRegister}
+                    onClick={() => navigate("/register")}
                     className="text-blue-400 hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
                   >
                     Regístrate aquí
