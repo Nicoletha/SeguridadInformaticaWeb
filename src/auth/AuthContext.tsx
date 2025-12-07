@@ -1,30 +1,38 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { API_URL } from "../config";
 
 interface AuthContextProps {
-  token: string | null;
-  setToken: (token: string | null) => void;
+  isAuthenticated: boolean;
+  setIsAuthenticated: (value: boolean) => void;
 }
 
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem("token");
-  });
 
-  const updateToken = (newToken: string | null) => {
-    if (newToken) {
-        localStorage.setItem("token", newToken);
-    } else {
-        localStorage.removeItem("token");
-    }
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-    setToken(newToken);
-  }
+  // Al montar la app, validar cookie con el backend
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/Access/Validate`, {
+          method: "GET",
+          credentials: "include" // IMPORTANTE enviar cookies
+        });
+
+        setIsAuthenticated(res.ok);
+      } catch {
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ token, setToken: updateToken }}>
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

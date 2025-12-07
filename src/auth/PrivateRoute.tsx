@@ -4,9 +4,9 @@ import { useAuth } from "./AuthContext";
 
 
 export function PrivateRoute({ children }: { children: ReactNode }) {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   return <>{children}</>;
 }

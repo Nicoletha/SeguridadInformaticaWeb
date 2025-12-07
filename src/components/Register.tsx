@@ -18,11 +18,11 @@ export function Register() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [passwordStrength, setPasswordStrength] = useState<string[]>([]);
-  const { token } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
 
-  if (token) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const validatePasswordStrength = (pwd: string) => {
     const checks = [];

@@ -9,7 +9,7 @@ import { useAuth } from '../auth/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 export function Login() {
-  const { token, setToken } = useAuth(); // <-- usamos setToken
+  const { isAuthenticated } = useAuth(); // <-- usamos setToken
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,7 +18,7 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Si ya hay token, redirige fuera del login
-  if (token) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -35,6 +35,7 @@ export function Login() {
     const response = await fetch(`${API_URL}/api/Access/Login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
 
@@ -52,7 +53,7 @@ export function Login() {
       return;
     }
 
-    setToken(data.token);
+    // setToken(data.token);
 
     navigate("/dashboard", { replace: true });
 
