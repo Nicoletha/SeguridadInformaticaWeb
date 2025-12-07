@@ -27,6 +27,7 @@ export function Login() {
 
   if (!email || !password) {
     setError("Porfavor complete todos los campos");
+    setIsLoading(false)
     return;
   }
 
