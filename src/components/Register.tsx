@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
+import { useAuth } from '../auth/AuthContext';
 
 
 export function Register() {
@@ -17,8 +18,11 @@ export function Register() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [passwordStrength, setPasswordStrength] = useState<string[]>([]);
+  const { token } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
+
+  if (token) return <Navigate to="/dashboard" replace />;
 
   const validatePasswordStrength = (pwd: string) => {
     const checks = [];
