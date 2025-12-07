@@ -1,58 +1,67 @@
 import { useState } from 'react';
-import { Lock, User, AlertCircle } from 'lucide-react';
+import { Lock, AlertCircle, Mail } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { API_URL } from '../config';
 import { useAuth } from '../auth/AuthContext';
-import { useNavigate } from 'react-router-dom';
-
-// interface LoginProps {
-//   onLogin: (username: string) => void;
-//   onSwitchToRegister: () => void;
-// }
+import { Navigate, useNavigate } from 'react-router-dom';
 
 export function Login() {
-  const { setToken } = useAuth(); // <-- usamos setToken
+  const { token, setToken } = useAuth(); // <-- usamos setToken
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const [isLoading, setIsLoading] = useState(false);
 
-    if (!email || !password) {
-      setError("Completa todos los campos");
+  // Si ya hay token, redirige fuera del login
+  if (token) return <Navigate to="/dashboard" replace />;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
+  setIsLoading(true)
+
+  if (!email || !password) {
+    setError("Porfavor complete todos los campos");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/Access/Login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      setError(body?.message ?? "Credenciales incorrectas");
       return;
     }
 
-    try {
-      const res = await fetch(`${API_URL}/api/Access/Login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }), // ajusta los nombres según tu API (email/username)
-      });
+    const data = await response.json();
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Credenciales incorrectas");
-        return;
-      }
-
-      const data = await res.json();
-
-      // Guarda token en el contexto (y localStorage dentro del provider)
-      setToken(data.token);
-
-      // navega al dashboard o ruta protegida
-      navigate("/dashboard");
-    } catch (err) {
-      setError("Error de servidor. Intenta más tarde.");
+    if (!data.isSucces) {
+      setError("Credenciales incorrectas");
+      setIsLoading(false)
+      return;
     }
-  };
+
+    setToken(data.token);
+
+    navigate("/dashboard", { replace: true });
+
+  } catch (err) {
+    setError("Error de servidor. Intenta más tarde.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-slate-900">
@@ -86,19 +95,20 @@ export function Login() {
                   </Alert>
                 )}
                 
-                {/* Usuario */}
+                {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-slate-300">Usuario</Label>
+                  <Label htmlFor="email" className="text-slate-300">Email</Label>
                   <div className="relative group">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                     <Input
                       id="email"
                       type="text"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}  
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                      placeholder="Ingrese su usuario"
-                      autoComplete="username"
+                      placeholder="Ingrese su email"
+                      autoComplete="email"
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -116,6 +126,7 @@ export function Login() {
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                       placeholder="Ingrese su contraseña"
                       autoComplete="current-password"
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -123,8 +134,9 @@ export function Login() {
                 <Button 
                   type="submit" 
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-500/50 hover:shadow-blue-500/70 transition-all"
+                  disabled={isLoading}
                 >
-                  Iniciar Sesión
+                  {isLoading ? 'Cargando...' : 'Iniciar sesión'}
                 </Button>
                 
                 <p className="text-center text-sm text-slate-400 pt-2">

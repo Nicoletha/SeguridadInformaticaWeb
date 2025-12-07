@@ -18,6 +18,8 @@ export function Register() {
   const [success, setSuccess] = useState('');
   const [passwordStrength, setPasswordStrength] = useState<string[]>([]);
 
+  const [isLoading, setIsLoading] = useState(false)
+
   const validatePasswordStrength = (pwd: string) => {
     const checks = [];
     if (pwd.length >= 8) checks.push('Al menos 8 caracteres');
@@ -37,36 +39,43 @@ export function Register() {
   e.preventDefault();
   setError('');
   setSuccess('');
+  setIsLoading(true)
 
   // VALIDACIONES
   if (!username || !email || !password || !confirmPassword) {
     setError('Por favor complete todos los campos');
+    setIsLoading(false)
     return;
   }
 
   if (username.length < 3) {
     setError('El usuario debe tener al menos 3 caracteres');
+    setIsLoading(false)
     return;
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     setError('Por favor ingrese un email válido');
+    setIsLoading(false)
     return;
   }
 
   if (password.length < 8) {
     setError('La contraseña debe tener al menos 8 caracteres');
+    setIsLoading(false)
     return;
   }
 
   if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
     setError('La contraseña debe contener mayúsculas, minúsculas y números');
+    setIsLoading(false)
     return;
   }
 
   if (password !== confirmPassword) {
     setError('Las contraseñas no coinciden');
+    setIsLoading(false)
     return;
   }
 
@@ -84,6 +93,7 @@ export function Register() {
     if (!response.ok) {
       const data = await response.json();
       setError(data.message || "Hubo un error al registrar el usuario");
+      setIsLoading(false)
       return;
     }
 
@@ -136,7 +146,7 @@ export function Register() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="username" className="text-slate-300">
-                    Usuario
+                    Nombre
                   </Label>
                   <div className="relative group">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
@@ -146,8 +156,9 @@ export function Register() {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                      placeholder="Mínimo 3 caracteres"
+                      placeholder="Ingrese su nombre"
                       autoComplete="username"
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -166,6 +177,7 @@ export function Register() {
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                       placeholder="tu@email.com"
                       autoComplete="email"
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -184,6 +196,7 @@ export function Register() {
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                       placeholder="Mínimo 8 caracteres"
                       autoComplete="new-password"
+                      disabled={isLoading}
                     />
                   </div>
                   {password && (
@@ -212,15 +225,17 @@ export function Register() {
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                       placeholder="Repite tu contraseña"
                       autoComplete="new-password"
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
 
                 <Button 
                   type="submit" 
+                  disabled={isLoading}
                   className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-lg shadow-blue-500/50 hover:shadow-blue-500/70 transition-all"
                 >
-                  Crear Cuenta
+                  {isLoading ? 'Cargando...' : 'Crear Cuenta'}
                 </Button>
                 
                 <p className="text-center text-sm text-slate-400 pt-2">
@@ -228,7 +243,6 @@ export function Register() {
                   <button
                     type="button"
                     onClick={() => navigate("/login")}
-                    //onClick={onSwitchToLogin}
                     className="text-blue-400 hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
                   >
                     Inicia sesión aquí
