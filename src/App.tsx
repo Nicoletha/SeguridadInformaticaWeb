@@ -42,6 +42,16 @@ export default function App() {
                 : <Navigate to="/login" replace />
             }
           />
+
+          {/* Ruta catch-all para 404 */}
+          <Route
+            path="*"
+            element={
+              isAuthenticated
+                ? <Navigate to="/dashboard" replace />
+                : <Navigate to="/login" replace />
+            }
+          />
         </Routes>
       </div>
     </BrowserRouter>
