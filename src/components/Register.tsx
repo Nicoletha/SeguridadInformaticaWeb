@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lock, User, Mail, AlertCircle, CheckCircle } from 'lucide-react';
+import { Lock, User, Mail, AlertCircle, CheckCircle, EyeOff, Eye } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -19,6 +19,9 @@ export function Register() {
   const [success, setSuccess] = useState('');
   const [passwordStrength, setPasswordStrength] = useState<string[]>([]);
   const { isAuthenticated } = useAuth()
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false)
 
@@ -194,7 +197,7 @@ export function Register() {
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                     <Input
                       id="password"
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => handlePasswordChange(e.target.value)}
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
@@ -202,6 +205,19 @@ export function Register() {
                       autoComplete="new-password"
                       disabled={isLoading}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="
+                        absolute right-2 top-1/2 -translate-y-1/2
+                        text-slate-400 hover:text-blue-400
+                        transition-colors z-20
+                        p-1 rounded
+                      "
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
                   {password && (
                     <div className="space-y-1 mt-3 p-3 bg-slate-800/30 rounded-lg border border-slate-700/50">
@@ -223,7 +239,7 @@ export function Register() {
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                     <Input
                       id="confirmPassword"
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
@@ -231,6 +247,19 @@ export function Register() {
                       autoComplete="new-password"
                       disabled={isLoading}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="
+                        absolute right-2 top-1/2 -translate-y-1/2
+                        text-slate-400 hover:text-blue-400
+                        transition-colors z-20
+                        p-1 rounded
+                      "
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
                 </div>
 

@@ -1,63 +1,62 @@
-import { useState } from 'react';
-import { Lock, AlertCircle, Mail } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Alert, AlertDescription } from './ui/alert';
-import { API_URL } from '../config';
-import { useAuth } from '../auth/AuthContext';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Lock, AlertCircle, Mail, EyeOff, Eye } from "lucide-react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Alert, AlertDescription } from "./ui/alert";
+import { API_URL } from "../config";
+import { useAuth } from "../auth/AuthContext";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export function Login() {
   const { isAuthenticated, setIsAuthenticated } = useAuth(); // <-- usamos setToken
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   // Si ya hay token, redirige fuera del login
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError('');
-  setIsLoading(true);
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
-  if (!email || !password) {
-    setError("Por favor complete todos los campos");
-    setIsLoading(false);
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_URL}/api/Access/Login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include", // 🔥 Necesario para recibir la cookie
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json().catch(() => null);
-
-    // ❌ Login incorrecto
-    if (!response.ok || !data?.isSucces) {
-      setError("Credenciales incorrectas");
+    if (!email || !password) {
+      setError("Por favor complete todos los campos");
+      setIsLoading(false);
       return;
     }
 
-    // ✅ Login correcto
-    setIsAuthenticated(true);
-    navigate("/dashboard", { replace: true });
+    try {
+      const response = await fetch(`${API_URL}/api/Access/Login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // 🔥 Necesario para recibir la cookie
+        body: JSON.stringify({ email, password }),
+      });
 
-  } catch (err) {
-    setError("Error de servidor. Intenta más tarde.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+      const data = await response.json().catch(() => null);
 
+      if (!response.ok || !data?.isSucces) {
+        setError("Credenciales incorrectas");
+        return;
+      }
+
+      // ✅ Login correcto
+      setIsAuthenticated(true);
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setError("Error de servidor. Intenta más tarde.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-slate-900">
@@ -67,7 +66,7 @@ export function Login() {
           <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
             {/* Header gradient */}
             <div className="h-2 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500" />
-            
+
             <div className="p-8">
               {/* Logo */}
               <div className="flex justify-center mb-6">
@@ -90,17 +89,19 @@ export function Login() {
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
-                
+
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-300">Email</Label>
+                  <Label htmlFor="email" className="text-slate-300">
+                    Email
+                  </Label>
                   <div className="relative group">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                     <Input
                       id="email"
                       type="text"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}  
+                      onChange={(e) => setEmail(e.target.value)}
                       className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                       placeholder="Ingrese su email"
                       autoComplete="email"
@@ -112,31 +113,59 @@ export function Login() {
                 {/* Contraseña */}
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-slate-300">Contraseña</Label>
+
                   <div className="relative group">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
-                    <Input
+                    <Lock
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors z-10"
+                      size={20}
+                    />
+
+                    <input
                       id="password"
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      className="
+                        w-full
+                        pl-11 pr-12
+                        bg-slate-800/50 border border-slate-700
+                        text-white placeholder:text-slate-500
+                        rounded-lg py-2
+                        focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+                        transition-all
+                      "
                       placeholder="Ingrese su contraseña"
                       autoComplete="current-password"
                       disabled={isLoading}
                     />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="
+                        absolute right-2 top-1/2 -translate-y-1/2
+                        text-slate-400 hover:text-blue-400
+                        transition-colors z-20
+                        p-1 rounded
+                      "
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-500/50 hover:shadow-blue-500/70 transition-all"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Cargando...' : 'Iniciar sesión'}
+                  {isLoading ? "Cargando..." : "Iniciar sesión"}
                 </Button>
-                
+
                 <p className="text-center text-sm text-slate-400 pt-2">
-                  ¿No tienes cuenta?{' '}
+                  ¿No tienes cuenta?{" "}
                   <button
                     type="button"
                     // onClick={onSwitchToRegister}
