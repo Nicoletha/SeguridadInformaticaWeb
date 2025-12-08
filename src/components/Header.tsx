@@ -1,12 +1,14 @@
 import { LogOut, User } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../auth/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
 
 export function Header() {
-  const { setIsAuthenticated } = useAuth();
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   const handleLogout = async () =>  {
     await fetch(`${API_URL}/api/Access/Logout`, {
@@ -38,10 +40,9 @@ export function Header() {
 
         {/* Perfil y Botón de Cerrar Sesión al lado */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
+          {/* <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
             <User className="size-4 text-blue-400" />
-            {/* <span className="text-white font-medium">{username}</span> */}
-          </div>
+          </div> */}
 
           <Button
             onClick={() => handleLogout()}
