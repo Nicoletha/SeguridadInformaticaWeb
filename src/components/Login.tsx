@@ -9,7 +9,7 @@ import { useAuth } from '../auth/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 export function Login() {
-  const { isAuthenticated } = useAuth(); // <-- usamos setToken
+  const { isAuthenticated, setIsAuthenticated } = useAuth(); // <-- usamos setToken
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,11 +23,11 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setError('');
-  setIsLoading(true)
+  setIsLoading(true);
 
   if (!email || !password) {
-    setError("Porfavor complete todos los campos");
-    setIsLoading(false)
+    setError("Por favor complete todos los campos");
+    setIsLoading(false);
     return;
   }
 
@@ -35,26 +35,20 @@ export function Login() {
     const response = await fetch(`${API_URL}/api/Access/Login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: 'include',
+      credentials: "include", // 🔥 Necesario para recibir la cookie
       body: JSON.stringify({ email, password }),
     });
 
-    if (!response.ok) {
-      const body = await response.json().catch(() => null);
-      setError(body?.message ?? "Credenciales incorrectas");
-      return;
-    }
+    const data = await response.json().catch(() => null);
 
-    const data = await response.json();
-
-    if (!data.isSucces) {
+    // ❌ Login incorrecto
+    if (!response.ok || !data?.isSucces) {
       setError("Credenciales incorrectas");
-      setIsLoading(false)
       return;
     }
 
-    // setToken(data.token);
-
+    // ✅ Login correcto
+    setIsAuthenticated(true);
     navigate("/dashboard", { replace: true });
 
   } catch (err) {

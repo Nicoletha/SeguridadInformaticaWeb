@@ -2,14 +2,20 @@ import { LogOut, User } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 export function Header() {
-  const { setToken } = useAuth();
+  const { setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    setToken(null);     // borra token
-    navigate("/login"); // redirige
+  const handleLogout = async () =>  {
+    await fetch(`${API_URL}/api/Access/Logout`, {
+      method: "POST",
+      credentials: "include"
+    });
+
+    setIsAuthenticated(false);
+    navigate("/login", { replace: true });
   };
 
   return (

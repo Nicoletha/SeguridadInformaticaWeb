@@ -1,30 +1,40 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { API_URL } from "../config";
 
-interface AuthContextProps {
-  isAuthenticated: boolean;
+interface AuthContextType {
+  isAuthenticated: boolean | null; // null = verificando
   setIsAuthenticated: (value: boolean) => void;
+  loading: boolean;
 }
 
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: null,
+  setIsAuthenticated: () => {},
+  loading: true,
+});
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+export const AuthProvider = ({ children }: any) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
-  // Al montar la app, validar cookie con el backend
+  // Verificar cookie al cargar
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const res = await fetch(`${API_URL}/api/Access/Validate`, {
           method: "GET",
-          credentials: "include" // IMPORTANTE enviar cookies
+          credentials: "include",
         });
 
-        setIsAuthenticated(res.ok);
-      } catch {
+        if (res.status === 200) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
         setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -32,18 +42,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth debe ser usado dentro de AuthProvider");
-  }
-
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
